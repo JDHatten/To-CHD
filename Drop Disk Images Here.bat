@@ -2,10 +2,16 @@
 MODE CON COLS=128 LINES=40
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
-SET supported=false
-SET search_text=Continue searching "%~dp1" for more (.cue .gdi .iso) files to convert? [Y/N]: 
-SET /A disks_found = 0
 
+:: Change this to a fixed absolute path then copy and paste this file anywhere you like,
+:: for instance directly inside your root game directory. Then you can just click the
+:: file anytime you want to convert newly added disk images to the CHD format.
+SET CHDMAN_PATH="%~dp0\chdman.exe"
+
+
+SET search_text=Continue searching "%~dp1" for more (.cue .gdi .iso) files to convert? [Y^/N]: 
+SET /A disks_found=0
+SET supported=false
 
 IF /I "%~x1" == ".cue" (
     SET supported=true
@@ -52,16 +58,19 @@ SET /P close=Finished, You May Close Window.
 :RunCHDMAN
     ECHO\
     IF /I "%~1" == "" (
-        ECHO Searching...
+        ECHO - Searching For Disk Iamges...
+        ECHO ------------------------------
         FOR /R %%i IN (*.cue, *.gdi, *.iso) DO (
-            ECHO\
-            ECHO Converting File: "%%i"
-            SET /A disks_found=disks_found+1
-            CALL "%~dp0\chdman.exe" createcd -i "%%i" -o "%%~dpni.chd"
+            ECHO Converting Disk Image: "%%i"
+            SET /A disks_found=!disks_found!+1
+            CALL %CHDMAN_PATH% createcd -i "%%i" -o "%%~dpni.chd"
         )
+        ECHO ------------------------------
     ) ELSE (
-        ECHO Converting Droped File: %1
-        CALL "%~dp0\chdman.exe" createcd -i %1 -o %2
+        ECHO - Converting Droped Disk Image: %1
+        ECHO ------------------------------
+        CALL %CHDMAN_PATH% createcd -i %1 -o %2
+        ECHO ------------------------------
     )
     EXIT /B 0
 
