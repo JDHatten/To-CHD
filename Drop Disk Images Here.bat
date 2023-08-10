@@ -1,6 +1,6 @@
 @ECHO off
 MODE CON COLS=128 LINES=40
-SETLOCAL EnableExtensions EnableDelayedExpansion
+SETLOCAL EnableExtensions
 
 
 :: Change this to a fixed absolute path then copy and paste this file anywhere you like,
@@ -25,12 +25,14 @@ IF /I "%~x1" == ".iso" (
 
 IF %supported% == true (
     CALL :RunCHDMAN "%~f1", "%~n1.chd"
+    SETLOCAL EnableDelayedExpansion
     ECHO\
     SET /P cont=!search_text!
     IF /I !cont! == y (
         CALL :RunCHDMAN
     )
 ) ELSE (
+    SETLOCAL EnableDelayedExpansion
     IF /I "%~x1" NEQ "" (
         ECHO These file formats "%~x1" are not supported.
         ECHO\
@@ -43,6 +45,7 @@ IF %supported% == true (
     )
 )
 
+SETLOCAL EnableDelayedExpansion
 ECHO\
 IF !disks_found! GTR 0 (
     CALL :DequoteECHO "Amount of Disk Images found and converted (or errored): !disks_found!"
@@ -56,13 +59,16 @@ SET /P close=Finished, You May Close Window.
 :: %1 Source
 :: %2 Output
 :RunCHDMAN
+    SETLOCAL DisableDelayedExpansion
     ECHO\
     IF /I "%~1" == "" (
         ECHO - Searching For Disk Iamges...
         ECHO ------------------------------
         FOR /R %%i IN (*.cue, *.gdi, *.iso) DO (
             ECHO Converting Disk Image: "%%i"
+            ENDLOCAL
             SET /A disks_found=!disks_found!+1
+            SETLOCAL DisableDelayedExpansion
             CALL %CHDMAN_PATH% createcd -i "%%i" -o "%%~dpni.chd"
         )
         ECHO ------------------------------
@@ -72,6 +78,7 @@ SET /P close=Finished, You May Close Window.
         CALL %CHDMAN_PATH% createcd -i %1 -o %2
         ECHO ------------------------------
     )
+    ENDLOCAL
     EXIT /B 0
 
 
